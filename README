@@ -1,1 +1,11 @@
-As Saint Peter guards heaven's gate, so does saint_peter decide who goes where in your rack based application.
+As Saint Peter guards heaven's gate, so does saint-peter decide who goes where
+in your rack based application.
+
+saint-peter is a rack adapter and associated server that provides role based
+authentication to rack based applications. It is *very* alpha right now, but I
+am willing to make it more robust if people like the idea.
+
+To see an example of it in action, pull down the code and run "ruby
+examples/example.rb". This will start both a test "app" server and the
+saint-peter server, then fire requests at them. Have a look and let me know
+what you think.
