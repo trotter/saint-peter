@@ -78,3 +78,7 @@ get '/users/:name/authorizations' do |name|
   authorized = (user_roles - auth_roles).length != user_roles.length
   {:authorized => authorized}.to_json
 end
+
+get '/status' do
+  'running'
+end
