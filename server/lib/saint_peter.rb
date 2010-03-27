@@ -1,5 +1,8 @@
+require 'rubygems'
 require 'sinatra'
 require 'json'
+
+set :port, 3333
 
 class Symbol
   def to_proc
@@ -60,13 +63,13 @@ User = MemoryStore.new(:name, :name => :string, :roles => :array)
 Authorization = MemoryStore.new(:resource, :resource => :string, :roles => :array)
 
 post '/users' do
-  User.create(params)
-  'Created'
+  user = User.create(params)
+  user ? 'Created' : 'Failed'
 end
 
 post '/authorizations' do
-  Authorization.create(params)
-  'Created'
+  auth = Authorization.create(params)
+  auth ? 'Created' : 'Failed'
 end
 
 get '/users/:name/authorizations' do |name|

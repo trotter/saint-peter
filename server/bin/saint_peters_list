@@ -1,0 +1,37 @@
+#!/usr/bin/env ruby
+require 'rubygems'
+require 'net/http'
+require 'uri'
+require 'thor'
+require 'json'
+require 'cgi'
+
+class SaintPetersList < Thor
+  BASE_URL = "http://localhost:3333"
+
+  desc "add_user USER ROLES", "Add a user and a comma separated list of roles"
+  def add_user(user, roles)
+    res = Net::HTTP.post_form(URI.parse(BASE_URL + "/users"),
+                              {'name' => user, 'roles' => roles})
+    puts res.body
+  end
+
+  desc "add_auth RESOURCE ROLES", "Add a resource and a comma separated list of roles"
+  def add_auth(resource, roles)
+    res = Net::HTTP.post_form(URI.parse(BASE_URL + "/authorizations"),
+                              {'resource' => resource, 'roles' => roles})
+    puts res.body
+  end
+
+  desc "check_auth USER RESOURCE", "Check whether a user is authorized for a resource"
+  def check_auth(user, resource)
+    resp = Net::HTTP.get(URI.parse(BASE_URL).host,
+                         "/users/#{CGI.escape(user)}/authorizations?resource=#{CGI.escape(resource)}",
+                         3333)
+    puts JSON.parse(resp)["authorized"]
+  end
+end
+
+if __FILE__ == $0
+  SaintPetersList.start
+end
