@@ -60,21 +60,21 @@ class MemoryStore
 end
 
 User = MemoryStore.new(:name, :name => :string, :roles => :array)
-Authorization = MemoryStore.new(:resource, :resource => :string, :roles => :array)
+Resource = MemoryStore.new(:name, :name => :string, :roles => :array)
 
 post '/users' do
   user = User.create(params)
   user ? 'Created' : 'Failed'
 end
 
-post '/authorizations' do
-  auth = Authorization.create(params)
+post '/resources' do
+  auth = Resource.create(params)
   auth ? 'Created' : 'Failed'
 end
 
 get '/users/:name/authorizations' do |name|
   user_roles = (User.find_by_name(name) || {})[:roles] || []
-  auth_roles = (Authorization.find_by_resource(params[:resource]) || {})[:roles] || []
+  auth_roles = (Resource.find_by_name(params[:resource]) || {})[:roles] || []
   authorized = (user_roles - auth_roles).length != user_roles.length
   {:authorized => authorized}.to_json
 end

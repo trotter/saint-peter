@@ -24,9 +24,9 @@ puts
 puts "Creating user"
 system "#{server_dir}/bin/saint_peters_list add_user trotter admin"
 
-# add authorization
-puts "Creating authorization"
-system "#{server_dir}/bin/saint_peters_list add_auth / admin"
+# add resource
+puts "Creating resource"
+system "#{server_dir}/bin/saint_peters_list add_resource / admin"
 
 # Hit the resource unauthenticated
 puts "\n\nUnauthenticated:"

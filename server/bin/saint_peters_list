@@ -16,10 +16,10 @@ class SaintPetersList < Thor
     puts res.body
   end
 
-  desc "add_auth RESOURCE ROLES", "Add a resource and a comma separated list of roles"
-  def add_auth(resource, roles)
-    res = Net::HTTP.post_form(URI.parse(BASE_URL + "/authorizations"),
-                              {'resource' => resource, 'roles' => roles})
+  desc "add_resource RESOURCE ROLES", "Add a resource and a comma separated list of roles"
+  def add_resource(resource, roles)
+    res = Net::HTTP.post_form(URI.parse(BASE_URL + "/resources"),
+                              {'name' => resource, 'roles' => roles})
     puts res.body
   end
 

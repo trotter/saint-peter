@@ -17,11 +17,11 @@ class SaintPeterTest < Test::Unit::TestCase
   end
 
   test "create an authorization" do
-    post '/authorizations', :resource => "/only-admins", :roles => "user, buster"
+    post '/resources', :name => "/only-admins", :roles => "user, buster"
     assert last_response.ok?
 
-    expected_authorization = { :resource => "/only-admins", :roles => ["user", "buster"] }
-    assert_equal expected_authorization, Authorization.find_by_resource("/only-admins")
+    expected_authorization = { :name => "/only-admins", :roles => ["user", "buster"] }
+    assert_equal expected_authorization, Resource.find_by_name("/only-admins")
   end
 
   test "check user authorization" do
@@ -34,11 +34,11 @@ class SaintPeterTest < Test::Unit::TestCase
     get "/users/#{user}/authorizations", :resource => "/only-admins"
     assert_equal({"authorized" => false}, JSON.parse(last_response.body))
 
-    post '/authorizations', :resource => "/only-admins", :roles => "buster"
+    post '/resources', :name => "/only-admins", :roles => "buster"
     get "/users/#{user}/authorizations", :resource => "/only-admins"
     assert_equal({"authorized" => false}, JSON.parse(last_response.body))
 
-    post '/authorizations', :resource => "/only-admins", :roles => "user,buster"
+    post '/resources', :name => "/only-admins", :roles => "user,buster"
     get "/users/#{user}/authorizations", :resource => "/only-admins"
     assert_equal({"authorized" => true}, JSON.parse(last_response.body))
   end
