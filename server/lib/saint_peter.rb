@@ -1,80 +1,52 @@
 require 'rubygems'
 require 'sinatra'
 require 'json'
+require 'active_record'
 
 set :port, 3333
 
-class Symbol
-  def to_proc
-    lambda { |o| o.send(self) }
-  end
-end
+ActiveRecord::Base.establish_connection(
+  :adapter => 'sqlite3',
+  :database => File.dirname(__FILE__) + "/../db/saint_peter_#{Sinatra::Application.environment}.sqlite3.db"
+)
 
-# MemoryStore is an in memory approximation of a datastore.
-# It takes O(n) for any find, so don't use it for major stuff.
-class MemoryStore
-  def initialize(primary_key, attributes = {})
-    @primary_key = primary_key
-    @attributes = attributes
-    @data_store = []
-  end
+class RoleBased < ActiveRecord::Base
+  self.abstract_class = true
 
-  def method_missing(meth, *args, &block)
-    case meth.to_s
-    when /^find_by_(.*)$/
-      find_by($1, *args, &block)
-    else 
-      super
+  def self.find_or_create(attrs)
+    obj = find_by_name(attrs[:name])
+    if obj
+      obj.update_attributes(attrs)
+    else
+      create(attrs)
     end
   end
 
-  def find_by(attribute, value)
-    @data_store.detect { |item| item[attribute.to_sym] == value }
-  end
-
-  def create(attrs={})
-    return unless valid?(attrs)
-    existing = send("find_by_#@primary_key", attrs[@primary_key])
-    @data_store.delete(existing) if existing
-    @data_store << sanitize(attrs)
-  end
-
-  def sanitize(attrs)
-    arr = attrs.map do |k, v|
-      val = case @attributes[k.to_sym]
-            when :string
-              v
-            when :array
-              v.split(/ *, */)
-            else
-              raise "Cannot sanitize #{k} of type #{@attributes[k]} and value #{v}"
-            end
-      [k.to_sym, val]
-    end
-    Hash[*arr.flatten(1)]
-  end
-
-  def valid?(attrs)
-    (attrs.keys.map(&:to_sym) - @attributes.keys.map(&:to_sym)).empty?
+  def roles
+    str = read_attribute(:roles)
+    str.split(/ *, */)
   end
 end
 
-User = MemoryStore.new(:name, :name => :string, :roles => :array)
-Resource = MemoryStore.new(:name, :name => :string, :roles => :array)
+class User < RoleBased
+end
+
+class Resource < RoleBased
+end
 
 post '/users' do
-  user = User.create(params)
+  user = User.find_or_create(params)
   user ? 'Created' : 'Failed'
 end
 
 post '/resources' do
-  auth = Resource.create(params)
+  auth = Resource.find_or_create(params)
   auth ? 'Created' : 'Failed'
 end
 
 get '/users/:name/authorizations' do |name|
-  user_roles = (User.find_by_name(name) || {})[:roles] || []
-  auth_roles = (Resource.find_by_name(params[:resource]) || {})[:roles] || []
+  user_roles = User.find_by_name(name).roles rescue []
+  auth_roles = Resource.find_by_name(params[:resource]).roles rescue []
   authorized = (user_roles - auth_roles).length != user_roles.length
   {:authorized => authorized}.to_json
 end

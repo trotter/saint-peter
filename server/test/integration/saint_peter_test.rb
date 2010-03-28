@@ -8,20 +8,29 @@ class SaintPeterTest < Test::Unit::TestCase
     Sinatra::Application
   end
 
+  def clean_db
+    User.delete_all
+    Resource.delete_all
+  end
+
+  setup do
+    clean_db
+  end
+
+  teardown do
+    clean_db
+  end
+
   test "create a user" do
     post '/users', :name => "john", :roles => "user, joker"
     assert last_response.ok?
-
-    expected_user = {:name => "john", :roles => ["user", "joker"]}
-    assert_equal expected_user, User.find_by_name("john")
+    assert_equal ["user", "joker"], User.find_by_name("john").roles
   end
 
   test "create an authorization" do
     post '/resources', :name => "/only-admins", :roles => "user, buster"
     assert last_response.ok?
-
-    expected_authorization = { :name => "/only-admins", :roles => ["user", "buster"] }
-    assert_equal expected_authorization, Resource.find_by_name("/only-admins")
+    assert_equal ["user", "buster"], Resource.find_by_name("/only-admins").roles
   end
 
   test "check user authorization" do

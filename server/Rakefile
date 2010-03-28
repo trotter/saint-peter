@@ -1,4 +1,5 @@
 require 'rake/testtask'
+require 'active_record'
 
 task :default => :test
 
@@ -6,4 +7,20 @@ Rake::TestTask.new do |t|
   t.libs += ["test", "lib"]
   t.pattern = "test/**/*_test.rb"
   t.verbose = true
+end
+
+desc "Setup database"
+task :create_db do |t|
+  base_dir = File.dirname(__FILE__)
+  ActiveRecord::Base.establish_connection(
+    :adapter => 'sqlite3',
+    :database => "#{base_dir}/db/saint_peter_development.sqlite3.db"
+  )
+  load("#{base_dir}/schema.rb")
+
+  ActiveRecord::Base.establish_connection(
+    :adapter => 'sqlite3',
+    :database => "#{base_dir}/db/saint_peter_test.sqlite3.db"
+  )
+  load("#{base_dir}/schema.rb")
 end
